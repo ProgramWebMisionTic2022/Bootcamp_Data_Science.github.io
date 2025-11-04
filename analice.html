@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard: Análisis de Datos con Python</title>
+    
+    <!-- 1. Estilos: Tailwind CSS (vía CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. Fuente: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- 3. Iconos: Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Estilo base con la fuente Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Animación para las diapositivas */
+        .slide {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Estilos para los botones de quiz */
+        .quiz-option:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .quiz-option.correct {
+            border-color: #22C55E; /* green-500 */
+            background-color: #F0FDF4; /* green-50 */
+            color: #166534; /* green-800 */
+            font-weight: bold;
+        }
+        .quiz-option.incorrect {
+            border-color: #EF4444; /* red-500 */
+            background-color: #FEF2F2; /* red-50 */
+            color: #991B1B; /* red-800 */
+        }
+        
+        /* Estilo para los bloques de código */
+        .code-block {
+            background-color: #1F2937; /* gray-800 */
+            color: #F3F4F6; /* gray-100 */
+            font-family: 'Courier New', Courier, monospace;
+            padding: 1.5rem;
+            border-radius: 0.75rem; /* rounded-xl */
+            overflow-x: auto;
+            border: 1px solid #374151; /* gray-700 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .code-block .comment { color: #6EE7B7; } /* emerald-300 (Más brillante) */
+        .code-block .keyword { color: #F0ABFC; } /* fuchsia-300 (Más brillante) */
+        .code-block .function { color: #7DD3FC; } /* sky-300 (Más brillante) */
+        .code-block .string { color: #FDE047; } /* yellow-400 (Más brillante) */
+
+
+        /* Estilos para el diploma (para impresión) */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            body * {
+                visibility: hidden;
+            }
+            #diploma-container, #diploma-container * {
+                visibility: visible;
+            }
+            #diploma-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            #diploma-card {
+                width: 90% !important;
+                border: 10px solid #4F46E5; /* indigo-600 */
+                padding: 40px;
+                box-shadow: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Contenedor principal -->
+    <div class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+        <!-- DIAPOSITIVA 0: Bienvenida e Ingreso de Nombre -->
+        <section id="slide0" class="p-8 md:p-12 text-center">
+            <header class="mb-8">
+                <span class="text-sm font-semibold text-indigo-600 bg-indigo-100 py-1 px-3 rounded-full">Bootcamp Data Science</span>
+                <h1 class="text-4xl md:text-5xl font-black text-gray-900 mt-4">Análisis de Datos con Python</h1>
+                <p class="text-lg text-gray-600 mt-4">De los Datos Crudos al Insight Accionable</p>
+            </header>
+            
+            <div class="max-w-md mx-auto">
+                <p class="text-gray-700 mb-4">¡Hola, futuro Data Analyst! 📊</p>
+                <p class="text-gray-700 mb-6">Para preparar tu certificado y activar tu contador de XP, por favor ingresa tu nombre completo:</p>
+                
+                <label for="studentName" class="sr-only">Nombre Completo</label>
+                <input type="text" id="studentName" placeholder="Ej: Ana María Rojas" class="w-full px-5 py-3 text-lg border-2 border-gray-300 rounded-lg focus:ring-4 focus:ring-indigo-300 focus:border-indigo-500 transition duration-300">
+                
+                <button onclick="startModule()" class="w-full bg-indigo-600 text-white font-bold text-lg py-4 px-6 rounded-lg shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transition duration-300 mt-6 transform hover:scale-105">
+                    Empezar Módulo <i class="fas fa-chart-line ml-2"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Contenedor de Diapositivas de Aprendizaje (Oculto al inicio) -->
+        <div id="learning-wrapper" class="hidden">
+            
+            <!-- Cabecera de Navegación, Progreso y Gamificación (XP) -->
+            <header class="p-4 bg-gray-50 border-b border-gray-200 sticky top-0 z-10 no-print">
+                <div class="flex justify-between items-center mb-4">
+                    <button id="prev-btn" onclick="prevSlide()" class="bg-gray-300 text-gray-700 font-bold py-2 px-5 rounded-lg hover:bg-gray-400 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-arrow-left mr-2"></i> Ant.
+                    </button>
+                    
+                    <!-- Contador y XP -->
+                    <div class="flex-1 flex justify-center items-center gap-6">
+                        <div class="text-center">
+                            <span id="slide-counter" class="text-sm font-semibold text-gray-600">Página 1 de 15</span>
+                            <div class="flex items-center justify-center mt-1">
+                                <i class="fas fa-star text-yellow-500 mr-2"></i>
+                                <span id="xpDisplay" class="text-lg font-bold text-indigo-600">0 XP</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="next-btn" onclick="nextSlide()" class="bg-indigo-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-indigo-700 transition duration-300">
+                        Sig. <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                <!-- Barra de Progreso -->
+                <div class="w-full bg-gray-200 h-3 rounded-full">
+                    <div id="progress-bar" class="bg-indigo-600 h-3 rounded-full" style="width: 0%; transition: width 0.5s ease-in-out;"></div>
+                </div>
+            </header>
+
+            <div class="p-8 md:p-12">
+
+                <!-- DIAPOSITIVA 1: Introducción -->
+                <section id="slide1" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-gray-900">1. ¿Qué es el Análisis de Datos? ⚡️</h2>
+                    <p class="text-lg text-gray-700 mt-6">¡Hola de nuevo! El Análisis de Datos es el proceso de <span class="font-bold text-indigo-600">inspeccionar, limpiar, transformar y modelar</span> datos con el objetivo de descubrir información útil, informar conclusiones y apoyar la toma de decisiones.</p>
+                    <p class="text-lg text-gray-700 mt-4">No se trata solo de números; se trata de <span class="font-bold">contar historias</span> y encontrar patrones que nadie más ha visto.</p>
+                    <div class="bg-gray-100 p-6 rounded-lg mt-6 border-l-4 border-indigo-500">
+                        <p class="text-lg text-gray-800"><span class="font-bold">Dato Crudo:</span> "Venta: $5.000, Producto: Café, Hora: 8:00 AM"</p>
+                        <p class="text-lg text-gray-800 mt-2"><span class="font-bold">Insight:</span> "El 70% de nuestras ventas de café ocurren antes de las 9:00 AM. Deberíamos hacer una promoción de 'combo desayuno' en ese horario."</p>
+                        <p class="text-xl text-indigo-700 font-semibold mt-4">¡Pasar del "Qué" al "Por Qué" y al "Qué Hacemos Ahora" es nuestro objetivo!</p>
+                    </div>
+                </section>
+
+                <!-- DIAPOSITIVA 2: El Workflow -->
+                <section id="slide2" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-gray-900">El Mapa del Analista 🗺️</h2>
+                    <p class="text-lg text-gray-700 mt-6">Todo proyecto de análisis sigue un <span class="font-bold">flujo de trabajo</span>. No puedes visualizar si no has limpiado los datos. Este es el orden que seguiremos:</p>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mt-8 text-center">
+                        <div class="bg-blue-100 p-4 rounded-lg shadow border-b-4 border-blue-300">
+                            <div class="text-3xl mb-2">📥</div>
+                            <h3 class="font-bold text-blue-800">1. Obtención</h3>
+                            <p class="text-sm text-blue-700">Conseguir los datos (CSV, API, DB)</p>
+                        </div>
+                        <div class="bg-purple-100 p-4 rounded-lg shadow border-b-4 border-purple-300">
+                            <div class="text-3xl mb-2">🧹</div>
+                            <h3 class="font-bold text-purple-800">2. Limpieza</h3>
+                            <p class="text-sm text-purple-700">Arreglar errores y vacíos</p>
+                        </div>
+                        <div class="bg-green-100 p-4 rounded-lg shadow border-b-4 border-green-300">
+                            <div class="text-3xl mb-2">📈</div>
+                            <h3 class="font-bold text-green-800">3. Análisis (EDA)</h3>
+                            <p class="text-sm text-green-700">Explorar y entender</p>
+                        </div>
+                        <div class="bg-yellow-100 p-4 rounded-lg shadow border-b-4 border-yellow-300">
+                            <div class="text-3xl mb-2">📊</div>
+                            <h3 class="font-bold text-yellow-800">4. Visualización</h3>
+                            <p class="text-sm text-yellow-700">Crear gráficos</p>
+                        </div>
+                        <div class="bg-red-100 p-4 rounded-lg shadow border-b-4 border-red-300">
+                            <div class="text-3xl mb-2">🗣️</div>
+                            <h3 class="font-bold text-red-800">5. Comunicación</h3>
+                            <p class="text-sm text-red-700">Contar la historia</p>
+                        </div>
+                    </div>
+                    <p class="text-lg text-gray-700 mt-8">Hoy nos enfocaremos en las herramientas clave para las primeras 3 fases.</p>
+                </section>
+
+                <!-- DIAPOSITIVA 3: Fase 1 - Pandas -->
+                <section id="slide3" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-gray-900"><span class="text-blue-600">Fase 1: La Herramienta Clave: Pandas 🐼</span></h2>
+                    <p class="text-lg text-gray-700 mt-6">En Python, la biblioteca (framework) #1 para análisis de datos es <span class="font-bold">Pandas</span>. Pandas nos da una estructura llamada <span class="font-bold">DataFrame</span>, que es básicamente una tabla de Excel súper poderosa con la que podemos "hablar" usando código.</p>
+                    <h3 class="text-2xl font-semibold text-gray-800 mt-8">Ejemplo: Cargar nuestros datos</h3>
+                    <p class="text-gray-700 mt-2">Imagina que tenemos un archivo `ventas.csv`. Así lo cargamos en un DataFrame:</p>
+                    
+                    <div class="code-block mt-4">
+                        <pre><code><span class="comment"># 1. Importar la biblioteca</span>
+<span class="keyword">import</span> pandas <span class="keyword">as</span> pd
+
+<span class="comment"># 2. Cargar un archivo CSV en un DataFrame (df)</span>
+df = pd.<span class="function">read_csv</span>(<span class="string">'ventas.csv'</span>)
+
+<span class="comment"># 3. Ver las primeras 5 filas para verificar</span>
+print(df.<span class="function">head</span>())</code></pre>
+                    </div>
+                </section>
+
+                <!-- DIAPOSITIVA 4: Quiz 1 -->
+                <section id="slide4" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-blue-600"><i class="fas fa-gamepad mr-2"></i> Quiz Rápido (¡+50 XP!)</h2>
+                    <p class="text-lg text-gray-700 mt-6">Según lo que vimos, ¿cuál es el <span class="font-bold">comando correcto</span> de Pandas para cargar un archivo llamado `reporte.csv` en un DataFrame?</p>
+                    
+                    <div class="space-y-4 mt-8" id="quiz-1-options">
+                        <button onclick="checkAnswer(1, this)" data-option="A" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-blue-500 transition duration-300">
+                            <span class="font-bold text-blue-600 mr-2">A.</span> `df = pd.load_file('reporte.csv')`
+                        </button>
+                        <button onclick="checkAnswer(1, this)" data-option="B" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-blue-500 transition duration-300">
+                            <span class="font-bold text-blue-600 mr-2">B.</span> `df = pd.read_csv('reporte.csv')`
+                        </button>
+                        <button onclick="checkAnswer(1, this)" data-option="C" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-blue-500 transition duration-300">
+                            <span class="font-bold text-blue-600 mr-2">C.</span> `df = pandas.open('reporte.csv')`
+                        </button>
+                    </div>
+                    
+                    <!-- Feedback Message -->
+                    <div id="feedback-1" class="hidden mt-6 p-4 rounded-lg text-lg"></div>
+                </section>
+
+                <!-- DIAPOSITIVA 5: Fase 2 - Limpieza -->
+                <section id="slide5" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-gray-900"><span class="text-purple-600">Fase 2: Limpieza de Datos 🧹</span></h2>
+                    <p class="text-lg text-gray-700 mt-6">El 80% del trabajo de un analista es... ¡limpiar! Los datos del mundo real son sucios: tienen <span class="font-bold">valores nulos (NaN)</span>, formatos incorrectos (texto en vez de número) o errores.</p>
+                    <p class="text-lg text-gray-700 mt-4">Pandas nos ayuda a encontrar y arreglar estos problemas rápidamente.</p>
+                    
+                    <h3 class="text-2xl font-semibold text-gray-800 mt-8">Ejemplo: Encontrar y eliminar vacíos</h3>
+                    <p class="text-gray-700 mt-2">Veamos cuántos valores nulos tenemos y cómo eliminarlos.</p>
+                    
+                    <div class="code-block mt-4">
+                        <pre><code><span class="comment"># 1. Ver un resumen de nulos por columna</span>
+print(df.<span class="function">isnull</span>().<span class="function">sum</span>())
+
+<span class="comment"># 2. (Opción A) Eliminar todas las filas que tengan AL MENOS un valor nulo</span>
+df_limpio = df.<span class="function">dropna</span>()
+
+<span class="comment"># 3. (Opción B) Rellenar los nulos de la columna 'Edad' con la media</span>
+media_edad = df[<span class="string">'Edad'</span>].<span class="function">mean</span>()
+df_relleno = df[<span class="string">'Edad'</span>].<span class="function">fillna</span>(media_edad)</code></pre>
+                    </div>
+                </section>
+
+                <!-- DIAPOSITIVA 6: Quiz 2 -->
+                <section id="slide6" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-purple-600"><i class="fas fa-gamepad mr-2"></i> Quiz Rápido (¡+50 XP!)</h2>
+                    <p class="text-lg text-gray-700 mt-6">Si quieres <span class="font-bold">eliminar filas</span> que tienen valores nulos (NaN), ¿qué comando de Pandas usarías?</p>
+                    
+                    <div class="space-y-4 mt-8" id="quiz-2-options">
+                        <button onclick="checkAnswer(2, this)" data-option="A" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-purple-500 transition duration-300">
+                            <span class="font-bold text-purple-600 mr-2">A.</span> `df.fill_na('eliminar')`
+                        </button>
+                        <button onclick="checkAnswer(2, this)" data-option="B" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-purple-500 transition duration-300">
+                            <span class="font-bold text-purple-600 mr-2">C.</span> `df.delete_nans()`
+                        </button>
+                        <button onclick="checkAnswer(2, this)" data-option="C" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-purple-500 transition duration-300">
+                            <span class="font-bold text-purple-600 mr-2">B.</span> `df.dropna()`
+                        </button>
+                    </div>
+                    
+                    <!-- Feedback Message -->
+                    <div id="feedback-2" class="hidden mt-6 p-4 rounded-lg text-lg"></div>
+                </section>
+                
+                <!-- DIAPOSITIVA 7: Fase 3 - EDA -->
+                <section id="slide7" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-gray-900"><span class="text-green-600">Fase 3: Análisis Exploratorio (EDA) 📈</span></h2>
+                    <p class="text-lg text-gray-700 mt-6">¡Ahora empieza lo divertido! El EDA (Exploratory Data Analysis) es el arte de "hacerle preguntas" a tus datos. ¿Cuál es el promedio de venta? ¿Cuál es el producto más vendido? ¿Hay valores extraños (outliers)?</p>
+                    <h3 class="text-2xl font-semibold text-gray-800 mt-8">Ejemplo: Estadísticas rápidas y Agrupación</h3>
+                    <p class="text-gray-700 mt-2">Dos comandos que usarás SIEMPRE:</p>
+                    
+                    <div class="code-block mt-4">
+                        <pre><code><span class="comment"># 1. Obtener estadísticas rápidas de columnas numéricas (media, min, max, etc.)</span>
+print(df.<span class="function">describe</span>())
+
+<span class="comment"># 2. Agrupar por 'Producto' y sumar las 'Ventas' de cada uno</span>
+ventas_por_producto = df.<span class="function">groupby</span>(<span class="string">'Producto'</span>)[<span class="string">'Ventas'</span>].<span class="function">sum</span>()
+print(ventas_por_producto)</code></pre>
+                    </div>
+                </section>
+                
+                <!-- DIAPOSITIVA 8: Quiz 3 -->
+                <section id="slide8" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-green-600"><i class="fas fa-gamepad mr-2"></i> Quiz Rápido (¡+50 XP!)</h2>
+                    <p class="text-lg text-gray-700 mt-6">¿Qué comando es MEJOR para ver estadísticas rápidas como la <span class="font-bold">media, mediana, min y max</span> de tus columnas numéricas?</p>
+                    
+                    <div class="space-y-4 mt-8" id="quiz-3-options">
+                        <button onclick="checkAnswer(3, this)" data-option="A" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-green-500 transition duration-300">
+                            <span class="font-bold text-green-600 mr-2">A.</span> `df.info()`
+                        </button>
+                        <button onclick="checkAnswer(3, this)" data-option="B" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-green-500 transition duration-300">
+                            <span class="font-bold text-green-600 mr-2">B.</span> `df.head()`
+                        </button>
+                        <button onclick="checkAnswer(3, this)" data-option="C" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-green-500 transition duration-300">
+                            <span class="font-bold text-green-600 mr-2">C.</span> `df.describe()`
+                        </button>
+                    </div>
+                    
+                    <!-- Feedback Message -->
+                    <div id="feedback-3" class="hidden mt-6 p-4 rounded-lg text-lg"></div>
+                </section>
+
+                <!-- DIAPOSITIVA 9: Fase 4 - Visualización -->
+                <section id="slide9" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-gray-900"><span class="text-yellow-600">Fase 4: Visualización 📊 (El "Aha!")</span></h2>
+                    <p class="text-lg text-gray-700 mt-6">"Una imagen vale más que mil filas de Excel". Los humanos entendemos patrones visuales mucho mejor que números.</p>
+                    <p class="text-lg text-gray-700 mt-4">La biblioteca más famosa para esto es <span class="font-bold">Matplotlib</span> (y Seaborn, que se basa en ella). Pandas tiene un conector directo con Matplotlib.</p>
+                    
+                    <h3 class="text-2xl font-semibold text-gray-800 mt-8">Ejemplo: Gráfico de Barras</h3>
+                    <p class="text-gray-700 mt-2">Tomemos las ventas por producto que calculamos antes y grafiquémoslas.</p>
+                    
+                    <div class="code-block mt-4">
+                        <pre><code><span class="comment"># 1. Importar la biblioteca de gráficos</span>
+<span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt
+
+<span class="comment"># 2. Calcular las ventas (como antes)</span>
+ventas_por_producto = df.<span class="function">groupby</span>(<span class="string">'Producto'</span>)[<span class="string">'Ventas'</span>].<span class="function">sum</span>()
+
+<span class="comment"># 3. ¡Graficar!</span>
+ventas_por_producto.<span class="function">plot</span>(<span class="function">kind</span>=<span class="string">'bar'</span>, <span class="function">color</span>=<span class="string">'indigo'</span>)
+
+<span class="comment"># 4. Añadir títulos y mostrar</span>
+plt.<span class="function">title</span>(<span class="string">'Ventas Totales por Producto'</span>)
+plt.<span class="function">ylabel</span>(<span class="string">'Ventas (USD)'</span>)
+plt.<span class="function">show</span>()</code></pre>
+                    </div>
+                </section>
+
+                <!-- DIAPOSITIVA 10: Quiz 4 -->
+                <section id="slide10" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-yellow-600"><i class="fas fa-gamepad mr-2"></i> Quiz Rápido (¡+50 XP!)</h2>
+                    <p class="text-lg text-gray-700 mt-6">En el código de visualización, ¿qué hace el comando <span class="font-bold">`.plot(kind='bar')`</span>?</p>
+                    
+                    <div class="space-y-4 mt-8" id="quiz-4-options">
+                        <button onclick="checkAnswer(4, this)" data-option="A" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-yellow-500 transition duration-300">
+                            <span class="font-bold text-yellow-600 mr-2">A.</span> Carga los datos desde un bar.
+                        </button>
+                        <button onclick="checkAnswer(4, this)" data-option="B" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-yellow-500 transition duration-300">
+                            <span class="font-bold text-yellow-600 mr-2">B.</span> Le dice a Matplotlib que cree un gráfico de barras.
+                        </button>
+                        <button onclick="checkAnswer(4, this)" data-option="C" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-yellow-500 transition duration-300">
+                            <span class="font-bold text-yellow-600 mr-2">C.</span> Describe las estadísticas de las barras.
+                        </button>
+                    </div>
+                    
+                    <!-- Feedback Message -->
+                    <div id="feedback-4" class="hidden mt-6 p-4 rounded-lg text-lg"></div>
+                </section>
+
+                <!-- DIAPOSITIVA 11: Fase 5 - Modelado (Bonus) -->
+                <section id="slide11" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-gray-900"><span class="text-teal-600">Bonus: Machine Learning 🤖</span></h2>
+                    <p class="text-lg text-gray-700 mt-6">A veces, no solo queremos *describir* el pasado, sino <span class="font-bold">predecir el futuro</span>. ¿Cuántas ventas tendremos mañana si invertimos X en publicidad?</p>
+                    <p class="text-lg text-gray-700 mt-4">Aquí es donde entra el Machine Learning. La biblioteca estándar es <span class="font-bold">Scikit-learn (sklearn)</span>.</p>
+                    
+                    <h3 class="text-2xl font-semibold text-gray-800 mt-8">Ejemplo: Regresión Lineal Simple</h3>
+                    <p class="text-gray-700 mt-2">Predecir 'Ventas' basándonos en 'Inversión en Publicidad'.</p>
+                    
+                    <div class="code-block mt-4">
+                        <pre><code><span class="comment"># 1. Importar el modelo</span>
+<span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LinearRegression
+
+<span class="comment"># 2. Definir nuestros datos X (feature) e y (target)</span>
+X = df[[<span class="string">'Publicidad'</span>]]
+y = df[<span class="string">'Ventas'</span>]
+
+<span class="comment"># 3. Crear y 'entrenar' el modelo</span>
+model = <span class="function">LinearRegression</span>()
+model.<span class="function">fit</span>(X, y)
+
+<span class="comment"># 4. Predecir cuánto venderíamos si invertimos $1000</span>
+prediccion = model.<span class="function">predict</span>([[<span class="string">1000</span>]])
+print(prediccion)</code></pre>
+                    </div>
+                </section>
+
+                <!-- DIAPOSITIVA 12: Quiz 5 -->
+                <section id="slide12" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-teal-600"><i class="fas fa-gamepad mr-2"></i> Quiz Rápido (¡+50 XP!)</h2>
+                    <p class="text-lg text-gray-700 mt-6">¿Qué biblioteca es el estándar en Python para <span class="font-bold">Machine Learning</span> (como la Regresión Lineal)?</p>
+                    
+                    <div class="space-y-4 mt-8" id="quiz-5-options">
+                        <button onclick="checkAnswer(5, this)" data-option="A" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-teal-500 transition duration-300">
+                            <span class="font-bold text-teal-600 mr-2">A.</span> `Pandas`
+                        </button>
+                        <button onclick="checkAnswer(5, this)" data-option="B" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-teal-500 transition duration-300">
+                            <span class="font-bold text-teal-600 mr-2">B.</span> `Scikit-learn (sklearn)`
+                        </button>
+                        <button onclick="checkAnswer(5, this)" data-option="C" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-teal-500 transition duration-300">
+                            <span class="font-bold text-teal-600 mr-2">C.</span> `Matplotlib`
+                        </button>
+                    </div>
+                    
+                    <!-- Feedback Message -->
+                    <div id="feedback-5" class="hidden mt-6 p-4 rounded-lg text-lg"></div>
+                </section>
+
+                <!-- DIAPOSITIVA 13: Fase 5 - Comunicación -->
+                <section id="slide13" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-gray-900"><span class="text-red-600">Fase 5: Comunicación 🗣️ (El Dashboard)</span></h2>
+                    <p class="text-lg text-gray-700 mt-6">¡Genial! Tienes tus análisis y gráficos. Pero tu jefe no sabe leer código Python. El último paso es <span class="font-bold">comunicar tus hallazgos</span>.</p>
+                    <p class="text-lg text-gray-700 mt-4">Aquí es donde entran las herramientas de <span class="font-bold">Business Intelligence (BI)</span> como Power BI, Tableau, o herramientas de Python como <span class="font-bold">Streamlit</span> o <span class="font-bold">Dash</span> para crear dashboards web interactivos.</p>
+                    <div class="bg-red-50 p-6 rounded-lg mt-6 border-l-4 border-red-500">
+                        <p class="text-lg text-red-700 font-semibold">El objetivo final no es tener el código más complejo, sino <span class="font-bold">ayudar a otros a tomar decisiones más inteligentes</span> basadas en datos.</p>
+                    </div>
+                </section>
+                
+                <!-- DIAPOSITIVA 14: Quiz 6 (Final) -->
+                <section id="slide14" class="slide hidden">
+                    <h2 class="text-3xl font-bold text-red-600"><i class="fas fa-star mr-2"></i> Quiz Final (¡+100 XP!)</h2>
+                    <p class="text-lg text-gray-700 mt-6">En un contexto de negocios, ¿cuál es el <span class="font-bold">objetivo principal</span> de todo el proceso de análisis de datos?</p>
+                    
+                    <div class="space-y-4 mt-8" id="quiz-6-options">
+                        <button onclick="checkAnswer(6, this)" data-option="A" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-red-500 transition duration-300">
+                            <span class="font-bold text-red-600 mr-2">A.</span> Crear los gráficos más complejos y coloridos posibles.
+                        </button>
+                        <button onclick="checkAnswer(6, this)" data-option="B" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-red-500 transition duration-300">
+                            <span class="font-bold text-red-600 mr-2">B.</span> Usar la mayor cantidad de bibliotecas de Python.
+                        </button>
+                        <button onclick="checkAnswer(6, this)" data-option="C" class="quiz-option w-full text-left p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-red-500 transition duration-300">
+                            <span class="font-bold text-red-600 mr-2">C.</span> Generar 'insights' (ideas) para tomar mejores decisiones de negocio.
+                        </button>
+                    </div>
+                    
+                    <!-- Feedback Message -->
+                    <div id="feedback-6" class="hidden mt-6 p-4 rounded-lg text-lg"></div>
+                </section>
+
+                <!-- DIAPOSITIVA 15: Diploma -->
+                <section id="slide15" class="slide hidden text-center">
+                    
+                    <h2 class="text-4xl font-black text-green-600">¡FELICITACIONES!</h2>
+                    <p class="text-2xl font-semibold text-gray-800 mt-2">Has completado el Módulo de Análisis de Datos</p>
+                    <p class="text-lg text-gray-600 mt-4">¡Has demostrado una gran habilidad para convertir datos en decisiones!</p>
+
+                    <!-- Contenedor del Diploma -->
+                    <div id="diploma-container" class="mt-8">
+                        <div id="diploma-card" class="w-full max-w-2xl mx-auto border-8 border-indigo-600 bg-white p-8 rounded-lg shadow-lg" style="background: linear-gradient(135deg, #F5F3FF 0%, #FEFEFF 100%);">
+                            <div class="text-center">
+                                <span class="text-sm font-semibold text-indigo-700">Bootcamp Data Science</span>
+                                <h3 class="text-4xl font-black text-gray-900 mt-4">Certificado de Finalización</h3>
+                                <p class="text-lg text-gray-600 mt-6">Se otorga este certificado a:</p>
+                                <p id="diplomaName" class="text-3xl font-bold text-indigo-800 my-4 border-b-2 border-indigo-300 pb-2">
+                                    [Nombre del Estudiante]
+                                </p>
+                                <p class="text-lg text-gray-700">Por completar exitosamente el módulo:</p>
+                                <p class="text-2xl font-semibold text-gray-900 mt-2">Fundamentos de Análisis de Datos con Python</p>
+                                <div class="mt-8 flex justify-between items-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">Fecha de Finalización</p>
+                                        <p id="diplomaDate" class="font-bold text-gray-800">[1 Enero, 2025]</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Puntaje Obtenido</p>
+                                        <p id="diplomaXP" class="font-bold text-gray-800">[350 XP]</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="printDiploma()" class="no-print w-full max-w-2xl mx-auto mt-8 bg-green-600 text-white font-bold text-lg py-4 px-6 rounded-lg shadow-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition duration-300 transform hover:scale-105">
+                        <i class="fas fa-print mr-2"></i> Descargar mi Certificado
+                    </button>
+
+                </section>
+
+            </div> <!-- Fin de .p-8 -->
+        </div> <!-- Fin de #learning-wrapper -->
+
+    </div> <!-- Fin de .w-full -->
+
+
+    <!-- 4. JavaScript: Lógica de la Aplicación -->
+    <script>
+        // ----- ESTADO GLOBAL DE LA APLICACIÓN -----
+        let currentSlide = 0;
+        const totalSlides = 15; // Total de diapositivas de aprendizaje (de la 1 a la 15)
+        let studentName = "Analista Anónimo";
+        let totalXP = 0;
+        
+        // Almacenamos los IDs de todas las diapositivas
+        const slideIDs = Array.from({ length: totalSlides }, (_, i) => `slide${i + 1}`);
+
+        // Objeto con las respuestas correctas
+        const quizAnswers = {
+            1: 'B', // read_csv
+            2: 'C', // dropna
+            3: 'C', // describe
+            4: 'B', // gráfico de barras
+            5: 'B', // sklearn
+            6: 'C'  // tomar decisiones
+        };
+        
+        // Estado de los quizzes (para evitar ganar XP múltiples veces)
+        const quizCompleted = { 1: false, 2: false, 3: false, 4: false, 5: false, 6: false };
+
+        // ----- ELEMENTOS DEL DOM -----
+        // Se obtienen una vez para mejor rendimiento
+        const slideCounter = document.getElementById('slide-counter');
+        const progressBar = document.getElementById('progress-bar');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const xpDisplay = document.getElementById('xpDisplay');
+        const diplomaName = document.getElementById('diplomaName');
+        const diplomaDate = document.getElementById('diplomaDate');
+        const diplomaXP = document.getElementById('diplomaXP');
+
+        // ----- FUNCIONES PRINCIPALES -----
+
+        /**
+         * Inicia el módulo: Oculta la bienvenida, muestra el contenido
+         */
+        function startModule() {
+            const nameInput = document.getElementById('studentName');
+            if (nameInput.value.trim() !== "") {
+                studentName = nameInput.value.trim();
+            }
+            
+            document.getElementById('slide0').classList.add('hidden');
+            document.getElementById('learning-wrapper').classList.remove('hidden');
+            
+            currentSlide = 1;
+            showSlide(currentSlide);
+            updateNavigation();
+        }
+
+        /**
+         * Muestra una diapositiva específica y oculta las demás
+         * @param {number} slideNumber - El número de la diapositiva a mostrar
+         */
+        function showSlide(slideNumber) {
+            // Ocultar todas las diapositivas
+            slideIDs.forEach(id => {
+                const slide = document.getElementById(id);
+                if (slide) {
+                    slide.classList.add('hidden');
+                }
+            });
+
+            // Mostrar la diapositiva actual
+            const currentSlideElement = document.getElementById(`slide${slideNumber}`);
+            if (currentSlideElement) {
+                currentSlideElement.classList.remove('hidden');
+            }
+            
+            // Si es la última diapositiva (diploma), la generamos
+            if (slideNumber === totalSlides) {
+                generateDiploma();
+            }
+        }
+
+        /**
+         * Avanza a la siguiente diapositiva
+         */
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                showSlide(currentSlide);
+                updateNavigation();
+            }
+        }
+
+        /**
+         * Retrocede a la diapositiva anterior
+         */
+        function prevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                showSlide(currentSlide);
+                updateNavigation();
+            }
+        }
+
+        /**
+         * Actualiza la barra de progreso, contador y botones de navegación
+         */
+        function updateNavigation() {
+            // Actualizar contador
+            slideCounter.textContent = `Página ${currentSlide} de ${totalSlides}`;
+            
+            // Actualizar barra de progreso
+            // (currentSlide - 1) porque el índice es base 0 (slide 1 es 0%)
+            // (totalSlides - 1) porque la última slide es el 100%
+            const progressPercent = ((currentSlide - 1) / (totalSlides - 1)) * 100;
+            progressBar.style.width = `${progressPercent}%`;
+
+            // Habilitar/deshabilitar botones
+            prevBtn.disabled = (currentSlide === 1);
+            nextBtn.disabled = (currentSlide === totalSlides);
+        }
+
+        /**
+         * Añade XP al total y actualiza la UI
+         * @param {number} points - Puntos a añadir
+         */
+        function updateXP(points) {
+            totalXP += points;
+            xpDisplay.textContent = `${totalXP} XP`;
+            
+            // Animación de XP
+            xpDisplay.classList.add('transform', 'scale-125', 'text-yellow-500');
+            setTimeout(() => {
+                xpDisplay.classList.remove('transform', 'scale-125', 'text-yellow-500');
+            }, 300);
+        }
+
+        /**
+         * Verifica la respuesta de un quiz
+         * @param {number} quizNum - El número del quiz (1, 2, 3...)
+         * @param {HTMLElement} selectedButton - El botón que fue clickeado
+         */
+        function checkAnswer(quizNum, selectedButton) {
+            // Si ya se completó, no hacer nada
+            if (quizCompleted[quizNum]) return;
+            
+            const correctOption = quizAnswers[quizNum];
+            const selectedOption = selectedButton.getAttribute('data-option');
+            const optionsContainer = document.getElementById(`quiz-${quizNum}-options`);
+            const feedbackDiv = document.getElementById(`feedback-${quizNum}`);
+            
+            // Deshabilitar todos los botones de este quiz
+            const allButtons = optionsContainer.querySelectorAll('.quiz-option');
+            allButtons.forEach(button => {
+                button.disabled = true;
+            });
+
+            if (selectedOption === correctOption) {
+                // Respuesta Correcta
+                selectedButton.classList.add('correct');
+                const points = (quizNum === 6) ? 100 : 50; // Quiz final da más puntos
+                feedbackDiv.innerHTML = `<i class="fas fa-check-circle text-green-600 mr-2"></i> ¡Correcto! Ganaste ${points} XP. ${getFeedbackMessage(quizNum, true)}`;
+                feedbackDiv.className = 'mt-6 p-4 rounded-lg text-lg bg-green-100 text-green-800';
+                updateXP(points);
+            } else {
+                // Respuesta Incorrecta
+                selectedButton.classList.add('incorrect');
+                // Encontrar y resaltar la correcta
+                const correctButton = optionsContainer.querySelector(`.quiz-option[data-option="${correctOption}"]`);
+                if (correctButton) {
+                    correctButton.classList.add('correct');
+                }
+                feedbackDiv.innerHTML = `<i class="fas fa-times-circle text-red-600 mr-2"></i> ¡Casi! La respuesta correcta era la ${correctOption}. ${getFeedbackMessage(quizNum, false)}`;
+                feedbackDiv.className = 'mt-6 p-4 rounded-lg text-lg bg-red-100 text-red-800';
+            }
+            
+            feedbackDiv.classList.remove('hidden');
+            quizCompleted[quizNum] = true; // Marcar como completado
+        }
+
+        /**
+         * Devuelve un mensaje de feedback personalizado para cada quiz
+         */
+        function getFeedbackMessage(quizNum, isCorrect) {
+            const messages = {
+                1: "<code>pd.read_csv()</code> es el comando fundamental para iniciar tu análisis.",
+                2: "<code>.dropna()</code> es la forma más rápida de eliminar filas con datos faltantes.",
+                3: "<code>.describe()</code> es tu mejor amigo para un resumen estadístico instantáneo.",
+                4: "<code>kind='bar'</code> es la clave para decirle a Pandas/Matplotlib qué tipo de gráfico quieres.",
+                5: "¡Exacto! Scikit-learn (o `sklearn`) es el estándar de oro para Machine Learning en Python.",
+                6: "¡Correcto! Los datos sin acción no sirven. El objetivo siempre es tomar mejores decisiones."
+            };
+            return messages[quizNum] || "";
+        }
+
+        /**
+         * Rellena el diploma con los datos del estudiante
+         */
+        function generateDiploma() {
+            diplomaName.textContent = studentName;
+            diplomaXP.textContent = `${totalXP} XP Obtenidos`;
+            
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            diplomaDate.textContent = today.toLocaleDateString('es-ES', options);
+        }
+
+        /**
+         * Activa la función de impresión del navegador
+         */
+        function printDiploma() {
+            window.print();
+        }
+
+    </script>
+
+</body>
+</html>
